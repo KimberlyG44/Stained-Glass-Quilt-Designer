@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stained Glass Quilt Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#14171f;
+    --bg-panel:#1c212e;
+    --bg-panel-2:#232838;
+    --accent:#c9a227;
+    --accent-dim:#8f7420;
+    --canvas-light:#f7f4ec;
+    --canvas-grid:#e5e0d2;
+    --text-light:#eae6da;
+    --text-dim:#9aa0b0;
+    --text-dark:#23262f;
+    --leading:#23262f;
+    --danger:#c0554a;
+    --border-dark:#2c3140;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-deep);
+    color:var(--text-light);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1280px;margin:0 auto;padding:28px 20px 60px;}
+  header{margin-bottom:24px;position:relative;}
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:clamp(28px,4vw,38px);
+    letter-spacing:0.2px;
+    margin:0 0 6px;
+    color:var(--text-light);
+  }
+  header p{
+    margin:0;
+    color:var(--text-dim);
+    font-size:14.5px;
+    max-width:640px;
+    line-height:1.5;
+  }
+  .sponsor-banner{
+    display:inline-block;
+    margin:14px 0 0;
+    padding:8px 18px;
+    border:1.5px solid var(--accent);
+    border-radius:999px;
+    font-size:13px;
+    color:var(--text-dim);
+    background:rgba(201,162,39,0.08);
+  }
+  .sponsor-banner a{
+    color:var(--accent);
+    font-weight:600;
+    text-decoration:none;
+  }
+  .sponsor-banner a:hover{
+    text-decoration:underline;
+  }
+  @media print{ .sponsor-banner{ display:none !important; } }
+  .layout{
+    display:grid;
+    grid-template-columns:296px 1fr;
+    gap:20px;
+    margin-top:26px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .controls{
+    background:var(--bg-panel);
+    border:1px solid var(--border-dark);
+    padding:20px;
+    position:sticky;
+    top:20px;
+    max-height:calc(100vh - 40px);
+    overflow-y:auto;
+  }
+  @media (max-width:860px){ .controls{position:static; max-height:none; overflow-y:visible;} }
+  @media (max-width:960px){
+    .color-picker-popover{
+      position:fixed;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      flex-wrap:wrap;
+      max-width:92vw;
+      justify-content:center;
+    }
+  }
+  .controls h2{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:15px;
+    margin:0 0 14px;
+    color:var(--accent);
+    letter-spacing:0.3px;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:5px;
+  }
+  .field .hint{
+    font-size:11px;
+    color:#6b7180;
+    margin-top:4px;
+    line-height:1.4;
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  input[type=number], input[type=text], select{
+    width:100%;
+    background:var(--bg-panel-2);
+    border:1px solid var(--border-dark);
+    color:var(--text-light);
+    padding:8px 9px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+  }
+  input[type=number]:focus, input[type=text]:focus, select:focus{outline:1px solid var(--accent);border-color:var(--accent);}
+  .checkbox-row{
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:12px;
+    cursor:pointer;
+  }
+  .checkbox-row input{width:15px;height:15px;accent-color:var(--accent);}
+  .checkbox-row label{font-size:13px;color:var(--text-light);cursor:pointer;}
+  .panel-fields{
+    padding-left:2px;
+    border-left:2px solid var(--border-dark);
+    padding-left:12px;
+    margin-left:2px;
+    display:none;
+  }
+  .panel-fields.active{display:block;}
+  hr.sep{border:none;border-top:1px solid var(--border-dark);margin:16px 0;}
+  button{
+    width:100%;
+    padding:11px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    letter-spacing:0.2px;
+    border:1px solid var(--accent);
+    background:var(--accent);
+    color:#1a1608;
+    cursor:pointer;
+    transition:background 0.12s, color .12s;
+  }
+  button:hover{background:#dcb52f;}
+  .error-msg{
+    background:rgba(192,85,74,0.15);
+    border:1px solid var(--danger);
+    color:#e6a49d;
+    font-size:12.5px;
+    padding:9px 10px;
+    margin-top:12px;
+    line-height:1.5;
+    display:none;
+  }
+  .main{min-width:0;}
+  .canvas-card{
+    background:var(--canvas-light);
+    border:1px solid var(--border-dark);
+    padding:22px;
+  }
+  .canvas-card .label-row{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;
+  }
+  .canvas-card .label-row .dims{
+    font-family:'Fraunces',serif;
+    color:var(--text-dark);
+    font-size:15px;
+  }
+  .toggle-labels{
+    font-size:12px;color:#5b5f6b;display:flex;align-items:center;gap:6px;
+  }
+  .toggle-labels input{accent-color:var(--accent-dim);}
+  .click-color-hint{
+    font-size:12px;
+    color:#8a8f9c;
+    font-style:italic;
+  }
+  .svg-wrap{width:100%;background:var(--canvas-light);}
+  svg{width:100%;height:auto;display:block;}
+  .legend{
+    display:flex;gap:18px;margin-top:14px;flex-wrap:wrap;
+  }
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#5b5f6b;}
+  .swatch{width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:8px;border:1px solid rgba(0,0,0,0.2);}
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--border-dark);
+    margin-top:20px;
+    border:1px solid var(--border-dark);
+  }
+  @media (max-width:640px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat{
+    background:var(--bg-panel);
+    padding:16px 14px;
+  }
+  .stat .num{
+    font-family:'Fraunces',serif;
+    font-size:24px;
+    color:var(--accent);
+    line-height:1;
+  }
+  .stat .lbl{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:6px;
+  }
+  .cutlist{margin-top:24px;}
+  .cutlist-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:4px;
+  }
+  .cutlist h2{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:17px;
+    margin:0;
+    color:var(--text-light);
+  }
+  .cutlist p.sub{color:var(--text-dim);font-size:12.5px;margin:0 0 12px;}
+  .assembly-section-title{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:14px;
+    color:var(--accent);
+    margin:18px 0 8px;
+  }
+  .assembly-section-title:first-child{margin-top:0;}
+  .assembly-table{margin-bottom:4px;}
+  .assembly-arrow{color:var(--text-dim);}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:var(--bg-panel);
+    border:1px solid var(--border-dark);
+  }
+  th,td{
+    text-align:left;
+    padding:9px 12px;
+    font-size:13px;
+    border-bottom:1px solid var(--border-dark);
+  }
+  th{
+    font-weight:600;
+    color:var(--accent);
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+  }
+  td{color:var(--text-light);}
+  tr:last-child td{border-bottom:none;}
+  .piece-label{vertical-align:middle;}
+  .swatch-count{
+    display:inline-block;
+    vertical-align:middle;
+    margin-right:8px;
+    font-size:10.5px;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+  .swatch-count .swatch{margin-right:3px;}
+  .ids-cell{
+    color:var(--text-dim);
+    font-size:11.5px;
+    max-width:220px;
+    word-break:break-word;
+    line-height:1.5;
+  }
+  .empty-state{
+    color:var(--text-dim);font-size:13px;padding:20px 0;text-align:center;
+  }
+  .field .fx-hint{color:#6b7180;}
+  .print-btn{
+    background:transparent;
+    border:1px solid var(--accent-dim);
+    color:var(--accent);
+    padding:6px 12px;
+    font-size:12px;
+    font-weight:600;
+    width:auto;
+    cursor:pointer;
+  }
+  .print-btn:hover{background:rgba(201,162,39,0.1);}
+  .label-actions{display:flex;align-items:center;gap:14px;}
+  .recolor-btn{
+    background:transparent;
+    border:1px solid var(--border-dark);
+    color:var(--text-dim);
+    padding:5px 10px;
+    font-size:11.5px;
+    width:auto;
+    cursor:pointer;
+  }
+  .recolor-btn:hover{color:var(--accent);border-color:var(--accent-dim);}
+
+  .print-menu-wrap, .save-menu-wrap{position:relative;}
+  .print-popover{
+    display:none;
+    position:absolute;
+    top:calc(100% + 6px);
+    right:0;
+    background:var(--bg-panel-2);
+    border:1px solid var(--border-dark);
+    padding:14px;
+    min-width:180px;
+    z-index:20;
+    box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  }
+  .print-popover.open{display:block;}
+  .print-popover-title{
+    font-size:11.5px;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    font-weight:600;
+    margin-bottom:10px;
+  }
+  .print-check-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--text-light);
+    padding:5px 0;
+    cursor:pointer;
+  }
+  .print-check-row input{accent-color:var(--accent);width:14px;height:14px;}
+  .print-popover-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .print-cancel-btn, .print-go-btn{
+    flex:1;
+    width:auto;
+    padding:7px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .print-cancel-btn{
+    background:transparent;
+    border:1px solid var(--border-dark);
+    color:var(--text-dim);
+  }
+  .print-cancel-btn:hover{color:var(--text-light);border-color:var(--text-dim);}
+  .print-go-btn{
+    background:var(--accent);
+    border:1px solid var(--accent);
+    color:#1a1608;
+  }
+  .print-go-btn:hover{background:#dcb52f;}
+
+  #savePopover{width:220px;}
+  .save-option-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    width:100%;
+    text-align:left;
+    background:transparent;
+    border:1px solid var(--border-dark);
+    color:var(--text-light);
+    padding:8px 10px;
+    margin-bottom:6px;
+    cursor:pointer;
+  }
+  .save-option-btn:hover{border-color:var(--accent-dim);background:rgba(201,162,39,0.08);}
+  .save-option-title{font-size:12.5px;font-weight:600;color:var(--text-light);}
+  .save-option-sub{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+
+  .color-picker-popover{
+    display:none;
+    position:absolute;
+    top:0;
+    right:0;
+    align-items:center;
+    background:var(--bg-panel-2);
+    border:1px solid var(--border-dark);
+    padding:14px 18px;
+    gap:16px;
+    z-index:30;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .color-picker-popover.open{display:flex;}
+  .cp-sv-square{
+    width:130px;height:130px;
+    position:relative;
+    cursor:crosshair;
+    background:
+      linear-gradient(to top, #000, rgba(0,0,0,0)),
+      linear-gradient(to right, #fff, rgba(255,255,255,0));
+    flex-shrink:0;
+    touch-action:none;
+  }
+  .cp-sv-cursor{
+    position:absolute;
+    width:14px;height:14px;
+    border:2px solid #fff;
+    border-radius:50%;
+    box-shadow:0 0 3px rgba(0,0,0,0.8);
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .cp-hue-slider{
+    width:22px;height:130px;
+    position:relative;
+    cursor:pointer;
+    background:linear-gradient(to bottom, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+    flex-shrink:0;
+    touch-action:none;
+  }
+  .cp-hue-cursor{
+    position:absolute;
+    left:-3px;right:-3px;
+    height:5px;
+    border:2px solid #fff;
+    box-shadow:0 0 3px rgba(0,0,0,0.8);
+    transform:translateY(-50%);
+    pointer-events:none;
+    box-sizing:border-box;
+  }
+  .cp-preview{
+    width:70px;height:130px;
+    border:1px solid var(--border-dark);
+    flex-shrink:0;
+  }
+  .cp-field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    height:130px;
+    justify-content:center;
+  }
+  .cp-field label{
+    font-size:12px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+  }
+  .cp-field input{
+    width:84px;
+    background:var(--bg-deep);
+    border:1px solid var(--border-dark);
+    color:var(--text-light);
+    font-size:16px;
+    padding:8px 9px;
+  }
+  .cp-field input:focus{outline:1px solid var(--accent);border-color:var(--accent);}
+
+  @media print{
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    body{background:#fff;color:#000;}
+    .controls, .toggle-labels, header p, .checkbox-row, .print-btn, .recolor-btn,
+    .print-popover, #generateBtn, .error-msg, .click-color-hint{ display:none !important; }
+    .layout{display:block;}
+    .canvas-card{background:#fff;border:none;padding:0;}
+    body:not(.print-incl-diagram) .canvas-card{ display:none !important; }
+    .stats{display:none; break-before:page; page-break-before:always;}
+    body.print-incl-stats .stats{ display:grid !important; }
+    body.print-incl-stats .stat{ background:#fff; border:1px solid #ccc; }
+    body.print-incl-stats .stat .num{ color:#000; }
+    body.print-incl-stats .stat .lbl{ color:#333; }
+    body:not(.print-incl-cutlist) .cutlist:not(.assembly-section){ display:none !important; }
+    body:not(.print-incl-assembly) .assembly-section{ display:none !important; }
+    .assembly-section{margin-top:14px; break-before:page; page-break-before:always;}
+    .assembly-section-title{color:#000;break-after:avoid;page-break-after:avoid;}
+    .assembly-arrow{color:#333;}
+    .legend-item{color:#000;}
+    .cutlist{margin-top:14px; break-before:page; page-break-before:always;}
+    .cutlist p.sub{color:#333;}
+    table{background:#fff;border-color:#000;border-collapse:collapse;table-layout:fixed;width:100%;}
+    th:nth-child(1), td:nth-child(1){width:17%;}
+    th:nth-child(2), td:nth-child(2){width:37%;}
+    th:nth-child(3), td:nth-child(3){width:6%;}
+    th:nth-child(4), td:nth-child(4){width:20%;}
+    th:nth-child(5), td:nth-child(5){width:20%;}
+    .assembly-table th:nth-child(1), .assembly-table td:nth-child(1){width:10%;}
+    .assembly-table th:nth-child(2), .assembly-table td:nth-child(2){width:90%;}
+    thead{display:table-header-group;}
+    tr{break-inside:avoid;page-break-inside:avoid;}
+    th{color:#000;}
+    td{color:#000;border-bottom:1px solid #999;}
+    .ids-cell{color:#444;}
+    .swatch-count{color:#444;}
+    th,td{border-bottom:1px solid #999;}
+    @page{margin:0.75in;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Stained Glass Quilt Planner</h1>
+    <p>Enter the finished size of your quilt and it lays out pieced blocks and sashing automatically, working around a center panel if you have one. Every measurement — block sizes, sashing, seam allowance — snaps to the nearest 1/4" so nothing ends up in an odd fraction you can't cut to.</p>
+    <div class="sponsor-banner">
+      Sponsored by <a href="https://www.etsy.com/shop/TTHQuiltDesigns" target="_blank" rel="noopener">Touching the Heart Quilt Designs</a>
+    </div>
+    <div class="color-picker-popover" id="colorPickerPopover">
+      <div class="cp-sv-square" id="cpSvSquare"><div class="cp-sv-cursor" id="cpSvCursor"></div></div>
+      <div class="cp-hue-slider" id="cpHueSlider"><div class="cp-hue-cursor" id="cpHueCursor"></div></div>
+      <div class="cp-preview" id="cpPreview"></div>
+      <div class="cp-field"><label for="cpHex">Hex</label><input type="text" id="cpHex" maxlength="7"></div>
+      <div class="cp-field"><label for="cpR">R</label><input type="number" id="cpR" min="0" max="255"></div>
+      <div class="cp-field"><label for="cpG">G</label><input type="number" id="cpG" min="0" max="255"></div>
+      <div class="cp-field"><label for="cpB">B</label><input type="number" id="cpB" min="0" max="255"></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="controls">
+      <h2>Quilt Size</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="quiltW">Width (in)</label>
+          <input type="text" id="quiltW" value="60" placeholder="e.g. 60 1/2">
+        </div>
+        <div class="field">
+          <label for="quiltH">Height (in)</label>
+          <input type="text" id="quiltH" value="72" placeholder="e.g. 72">
+        </div>
+      </div>
+
+      <hr class="sep">
+      <h2>Sashing &amp; Seams</h2>
+      <div class="field">
+        <label for="sashW">Finished sashing width (in)</label>
+        <input type="text" id="sashW" value="1" placeholder="e.g. 1 or 3/4">
+      </div>
+      <div class="field">
+        <label for="seamAllow">Seam allowance, per side (in)</label>
+        <input type="text" id="seamAllow" value="1/4" placeholder="e.g. 1/4">
+        <div class="hint">Added to every side of every piece. Standard quilting seam is 1/4". You can type fractions like 3 1/2 or plain decimals like 3.5.</div>
+      </div>
+      <div class="field">
+        <label for="minSeamGap">Min gap between unrelated seams (in)</label>
+        <input type="text" id="minSeamGap" value="1" placeholder="e.g. 1">
+        <div class="hint">Two vertical seams from different parts of the design won't land closer than this, and same for two horizontal seams.</div>
+      </div>
+
+      <hr class="sep">
+      <h2>Block Sizes</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="minBlock">Min finished size (in)</label>
+          <input type="text" id="minBlock" value="3" placeholder="e.g. 3">
+        </div>
+        <div class="field">
+          <label for="maxBlock">Max finished size (in)</label>
+          <input type="text" id="maxBlock" value="7" placeholder="e.g. 7 1/2">
+        </div>
+      </div>
+      <div class="field">
+        <label for="maxAspect">Max shape (long side ÷ short side)</label>
+        <input type="text" id="maxAspect" value="2" placeholder="e.g. 2">
+        <div class="hint">Lower = boxier blocks (1 forces near-squares). Note the ceiling here is Max finished size ÷ Min finished size - set below that ratio and a few leftover pieces may still exceed it (you'll see a note after generating).</div>
+      </div>
+      <div class="checkbox-row" id="halfInchBlocksRow">
+        <input type="checkbox" id="halfInchBlocks" checked>
+        <label for="halfInchBlocks">Blocks only in 1/2" increments</label>
+      </div>
+      <div class="hint" style="margin-top:-8px;margin-bottom:12px;">Seam allowance still snaps to 1/4" as usual - this rounds the blocks themselves to the nearest 1/2". Requires Quilt Size, Sashing width, and Panel size (if used) to be whole or half inches too, so every block can land on the grid cleanly.</div>
+
+      <hr class="sep">
+      <div class="checkbox-row" id="panelToggleRow">
+        <input type="checkbox" id="hasPanel">
+        <label for="hasPanel">Center panel (fussy-cut fabric)</label>
+      </div>
+      <div class="panel-fields" id="panelFields">
+        <div class="row2">
+          <div class="field">
+            <label for="panelW">Panel width (in)</label>
+            <input type="text" id="panelW" value="16" placeholder="e.g. 16 1/4">
+          </div>
+          <div class="field">
+            <label for="panelH">Panel height (in)</label>
+            <input type="text" id="panelH" value="20" placeholder="e.g. 20">
+          </div>
+        </div>
+        <div class="hint">Panel is centered on the quilt. Blocks and sashing are built in the four regions around it.</div>
+      </div>
+
+      <hr class="sep">
+      <h2>Symmetry</h2>
+      <div class="field">
+        <label for="symmetry">Layout pattern</label>
+        <select id="symmetry">
+          <option value="none" selected>None (fully random)</option>
+          <option value="lr">Mirror left ↔ right</option>
+          <option value="tb">Mirror top ↔ bottom</option>
+          <option value="both">Mirror both (4-way)</option>
+          <option value="rotate180">Rotate 180° (pinwheel)</option>
+        </select>
+        <div class="hint">Generates one section randomly and copies it (mirrored or rotated) to build the rest of the quilt.</div>
+      </div>
+      <div class="checkbox-row" id="mirrorColorsRow" style="display:none;">
+        <input type="checkbox" id="mirrorColors">
+        <label for="mirrorColors">Also mirror colors (matching blocks get the same color)</label>
+      </div>
+
+      <hr class="sep">
+      <button id="generateBtn">Generate layout</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </aside>
+
+    <main class="main">
+      <div class="canvas-card">
+        <div class="label-row">
+          <div class="dims" id="dimsLabel">60" × 72"</div>
+          <div class="label-actions">
+            <div class="click-color-hint">Click a block to change its color</div>
+            <div class="toggle-labels">
+              <input type="checkbox" id="showLabels">
+              <label for="showLabels">Show piece IDs</label>
+            </div>
+            <div class="save-menu-wrap">
+              <button class="print-btn" id="saveMenuBtn">Save...</button>
+              <div class="print-popover" id="savePopover">
+                <div class="print-popover-title">Save as</div>
+                <button class="save-option-btn" id="saveJsonBtn">
+                  <span class="save-option-title">Project file (.json)</span>
+                  <span class="save-option-sub">Reopen later with Load, keep editing</span>
+                </button>
+                <button class="save-option-btn" id="savePngBtn">
+                  <span class="save-option-title">Image (.png)</span>
+                  <span class="save-option-sub">Picture of the diagram</span>
+                </button>
+                <button class="save-option-btn" id="saveCsvBtn">
+                  <span class="save-option-title">Cutting list (.csv)</span>
+                  <span class="save-option-sub">Opens in Excel / Sheets</span>
+                </button>
+                <button class="save-option-btn" id="savePdfBtn">
+                  <span class="save-option-title">PDF</span>
+                  <span class="save-option-sub">Opens the print dialog</span>
+                </button>
+                <div class="print-popover-actions">
+                  <button class="print-cancel-btn" id="saveCancelBtn">Close</button>
+                </div>
+              </div>
+            </div>
+            <button class="print-btn" id="loadMenuBtn">Load project...</button>
+            <input type="file" id="loadFileInput" accept=".json,application/json" style="display:none;">
+            <div class="print-menu-wrap">
+              <button class="print-btn" id="printMenuBtn">Print...</button>
+              <div class="print-popover" id="printPopover">
+                <div class="print-popover-title">What to print</div>
+                <label class="print-check-row"><input type="checkbox" id="printInclDiagram" checked> Diagram</label>
+                <label class="print-check-row"><input type="checkbox" id="printInclStats"> Stats</label>
+                <label class="print-check-row"><input type="checkbox" id="printInclCutlist" checked> Cutting list</label>
+                <label class="print-check-row"><input type="checkbox" id="printInclAssembly" checked> Order of operations</label>
+                <div class="print-popover-actions">
+                  <button class="print-cancel-btn" id="printCancelBtn">Cancel</button>
+                  <button class="print-go-btn" id="printGoBtn">Print</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="svg-wrap"><svg id="quiltSvg" viewBox="0 0 60 72" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <div class="legend">
+          <div class="legend-item"><span class="swatch" style="background:var(--leading)"></span>Sashing</div>
+          <div class="legend-item"><span class="swatch" style="background:#ffffff;border-style:dashed;"></span>Center panel</div>
+          <div class="legend-item"><span class="swatch" style="background:#7A2E3B"></span>Pieced blocks</div>
+          <button class="recolor-btn" id="randomizeColorsBtn">Randomize colors</button>
+        </div>
+      </div>
+
+      <div class="stats" id="statsRow"></div>
+      <div class="error-msg" id="tightSpotNote" style="display:none;"></div>
+
+      <div class="cutlist">
+        <div class="cutlist-header">
+          <h2>Cutting list</h2>
+        </div>
+        <p class="sub">Cut size = finished size + seam allowance on every side. All measurements round to the nearest 1/4".</p>
+        <div id="cutlistTable"></div>
+      </div>
+
+      <div class="cutlist assembly-section" id="assemblySection" style="display:none;">
+        <div class="cutlist-header">
+          <h2>Order of operations</h2>
+        </div>
+        <p class="sub">Sew in this order - each numbered "Unit" is what you get from a prior step, so you can always tell what's already assembled.</p>
+        <div id="assemblyTable"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const PALETTE = ['#7A2E3B','#1F5C6B','#2E4C8C','#5C3B7A','#B5652C','#3A6B45','#8C3E6E','#2E7A6B','#9B4A2E','#3E4C9B'];
+const LEADING = '#23262f';
+
+function gcd(a,b){ return b===0? a : gcd(b, a%b); }
+function round4(x){ return Math.round(x*4)/4; }
+
+// Parses inputs like "3", "3.5", "3 1/2", "3-1/2", "1/2" into a decimal number.
+function parseFraction(str){
+  if(str === null || str === undefined) return NaN;
+  let s = String(str).trim().replace(/["“”]/g,'');
+  if(s === '') return NaN;
+  if(s.indexOf('/') === -1){
+    let f = parseFloat(s);
+    return isNaN(f) ? NaN : f;
+  }
+  let neg = s.startsWith('-');
+  if(neg) s = s.slice(1);
+  let parts = s.split(/[\s-]+/).filter(Boolean);
+  let whole = 0, fracVal = 0, sawAny = false;
+  for(const part of parts){
+    if(part.indexOf('/') > -1){
+      const [n,d] = part.split('/').map(Number);
+      if(!d || isNaN(n) || isNaN(d)) return NaN;
+      fracVal += n/d;
+      sawAny = true;
+    } else {
+      const v = parseFloat(part);
+      if(isNaN(v)) return NaN;
+      whole += v;
+      sawAny = true;
+    }
+  }
+  if(!sawAny) return NaN;
+  const val = whole + fracVal;
+  return neg ? -val : val;
+}
+
+function toFraction(value){
+  let sign = value < 0 ? '-' : '';
+  value = Math.abs(value);
+  let whole = Math.floor(value + 1e-6);
+  let quarters = Math.round((value - whole) * 4);
+  if(quarters === 4){ whole += 1; quarters = 0; }
+  if(quarters === 0) return sign + whole + '"';
+  let g = gcd(quarters, 4);
+  let num = quarters/g, den = 4/g;
+  return sign + (whole > 0 ? whole + ' ' : '') + num + '/' + den + '"';
+}
+
+let pieceCounter = { block: 0, sash: 0 };
+
+function makeBlock(x,y,w,h){
+  pieceCounter.block++;
+  return { type:'block', id:'B'+pieceCounter.block, x, y, w, h };
+}
+function makeSash(x,y,w,h){
+  pieceCounter.sash++;
+  return { type:'sash', id:'S'+pieceCounter.sash, x, y, w, h };
+}
+
+// Creates transformed copies (mirrored or rotated, per xform) of a set of
+// pieces, each with a fresh id from the same counter used everywhere else,
+// so a symmetric layout can be built by generating one section and copying
+// it into place rather than randomizing the whole quilt independently.
+// Each block copy remembers its source piece's id (mirrorSourceId) so colors
+// can optionally be synced to match after the normal random coloring pass.
+function transformPieces(pieces, xform){
+  return pieces.map(p => {
+    const { x, y } = xform(p);
+    const clone = p.type === 'block' ? makeBlock(x, y, p.w, p.h) : makeSash(x, y, p.w, p.h);
+    if(p.type === 'block') clone.mirrorSourceId = p.id;
+    return clone;
+  });
+}
+
+// Builds an old-id -> new-id map from two equal-length, same-order piece
+// arrays (the output of transformPieces pairs up 1:1 with its input).
+function buildIdMap(originalPieces, clonedPieces){
+  const map = {};
+  originalPieces.forEach((p,i) => { map[p.id] = clonedPieces[i].id; });
+  return map;
+}
+// Produces a copy of an assembly tree with every leaf/sash id remapped -
+// used so a mirrored/rotated copy of a section has its own assembly tree
+// that references the correct (copied) piece ids, not the originals.
+function mirrorTree(tree, idMap){
+  if(!tree) return null;
+  if(tree.type === 'leaf') return { type:'leaf', id: idMap[tree.id] || tree.id };
+  return { type:'join', axis: tree.axis, sashId: idMap[tree.sashId] || tree.sashId,
+    left: mirrorTree(tree.left, idMap), right: mirrorTree(tree.right, idMap) };
+}
+
+// If mirroring colors is enabled, makes every mirrored/rotated copy match
+// its source piece's color (called after the normal random coloring pass).
+function syncMirroredColors(pieces){
+  const byId = {};
+  pieces.forEach(p => { byId[p.id] = p; });
+  pieces.forEach(p => {
+    if(p.type === 'block' && p.mirrorSourceId){
+      const src = byId[p.mirrorSourceId];
+      if(src) p.color = src.color;
+    }
+  });
+}
+
+// Picks a random cut point between lo and hi, with a randomly-shaped skew each
+// call so some splits are near-even and others are lopsided (big piece + sliver).
+function randomSplitPoint(lo, hi){
+  const t = Math.random();
+  const exp = 0.55 + Math.random()*1.5;
+  let skewed = Math.pow(t, exp);
+  if(Math.random() < 0.5) skewed = 1 - skewed;
+  return lo + skewed*(hi-lo);
+}
+
+// Chooses which axis to split on, given which axes are even possible (canV/canH),
+// which are forced (mustV/mustH, because the region exceeds maxB on that axis),
+// and discourages repeating the same axis too many times in a row so we don't
+// get long single-column or single-row runs.
+function chooseAxis(canV, canH, mustV, mustH, w, h, lastAxis, run){
+  const forced = [];
+  if(mustV && canV) forced.push('v');
+  if(mustH && canH) forced.push('h');
+  if(forced.length) return forced[Math.floor(Math.random()*forced.length)];
+
+  let weightV = canV ? 1 : 0;
+  let weightH = canH ? 1 : 0;
+  const ratio = w/h;
+  if(ratio > 1.15) weightV *= 1.5;
+  if(ratio < 0.87) weightH *= 1.5;
+  if(lastAxis && run >= 2){
+    if(lastAxis === 'v') weightV *= 0.2; else weightH *= 0.2;
+  }
+  const total = weightV + weightH;
+  if(total <= 0) return canV ? 'v' : 'h';
+  return Math.random()*total < weightV ? 'v' : 'h';
+}
+
+// Given a raw target position and the valid [lo,hi] range for it, nudges it
+// away from any position in `avoid` whose real edge-to-edge gap (accounting
+// for the strip's own width S) would be under minGap - snapping to an exact
+// match if it's already close, otherwise pushing clear by minGap.
+function resolvePosition(rawPos, lo, hi, avoid, minGap, S, regionStart, blockStep){
+  if(!avoid || avoid.length === 0) return round4(rawPos);
+  regionStart = regionStart === undefined ? lo : regionStart;
+  blockStep = blockStep || 0.25;
+  const threshold = minGap + S; // edge-to-edge gap = |pos-a| - S, so need |pos-a| >= minGap+S
+  let pos = Math.min(hi, Math.max(lo, rawPos));
+  for(let iter=0; iter<8; iter++){
+    let conflict = null;
+    for(const a of avoid){
+      const d = pos - a;
+      if(Math.abs(d) < 0.02){ conflict = null; break; } // already aligned - fine
+      if(Math.abs(d) < threshold){ conflict = { a, d }; break; }
+    }
+    if(!conflict) break;
+    if(Math.abs(conflict.d) < threshold*0.4 && conflict.a >= lo && conflict.a <= hi){
+      pos = conflict.a; // close enough - snap to a clean aligned line
+      continue;
+    }
+    const candidateHigh = conflict.a + threshold;
+    const candidateLow = conflict.a - threshold;
+    const validHigh = candidateHigh >= lo && candidateHigh <= hi;
+    const validLow = candidateLow >= lo && candidateLow <= hi;
+    if(validHigh && validLow){
+      pos = conflict.d >= 0 ? candidateHigh : candidateLow;
+    } else if(validHigh){
+      pos = candidateHigh;
+    } else if(validLow){
+      pos = candidateLow;
+    } else {
+      pos = Math.min(hi, Math.max(lo, conflict.d >= 0 ? candidateHigh : candidateLow));
+    }
+  }
+  // Having resolved the seam-gap conflict, try to also land on the block
+  // grid without reintroducing a violation - falls back to the resolved
+  // (possibly off-grid) position only if no grid point satisfies both.
+  const snappedPos = regionStart + Math.round((pos-regionStart)/blockStep)*blockStep;
+  if(snappedPos >= lo - 1e-6 && snappedPos <= hi + 1e-6){
+    const stillOk = avoid.every(a => Math.abs(snappedPos-a) < 0.02 || Math.abs(snappedPos-a) >= threshold - 1e-6);
+    if(stillOk) return round4(snappedPos);
+  }
+  return round4(pos);
+}
+
+// Scans every sash already placed (anywhere in the design so far, not just
+// direct siblings) and returns the cross-axis positions of any same-
+// orientation sash whose span overlaps, or sits within one sashing-width of,
+// the range this new sash is about to occupy - i.e. anything it could
+// visibly meet or jog against.
+function nearbyPositions(placed, orientation, rangeStart, rangeEnd, gapThreshold){
+  const eps = 0.02;
+  const results = [];
+  for(const p of placed){
+    if(p.type !== 'sash') continue;
+    const isVert = p.h > p.w;
+    if(orientation === 'v' && !isVert) continue;
+    if(orientation === 'h' && isVert) continue;
+    const pStart = orientation === 'v' ? p.y : p.x;
+    const pEnd = orientation === 'v' ? p.y+p.h : p.x+p.w;
+    const overlap = Math.min(pEnd, rangeEnd) - Math.max(pStart, rangeStart);
+    let related = overlap > eps;
+    if(!related){
+      const gap = Math.max(pStart, rangeStart) - Math.min(pEnd, rangeEnd);
+      related = gap <= gapThreshold + eps;
+    }
+    if(related) results.push(orientation === 'v' ? p.x : p.y);
+  }
+  return results;
+}
+
+// Picks the absolute coordinate for a new sash along the given axis,
+// resolved against every already-placed same-orientation sash it could
+// visibly meet, so it lines up cleanly or clears by minGap.
+// Snaps rawOffset to the nearest multiple of `step` that still falls within
+// [lo,hi] - lo/hi themselves aren't necessarily step-aligned (they come from
+// randomized size minimums), so a naive clamp could land on a non-aligned
+// boundary. Falls back to a plain clamp only if no aligned point fits at all.
+function snapOffsetWithinBounds(rawOffset, lo, hi, step){
+  const eps = 1e-9;
+  const snapped = Math.round(rawOffset/step)*step;
+  if(snapped >= lo - eps && snapped <= hi + eps) return snapped;
+  const loSnap = Math.ceil(lo/step - eps)*step;
+  const hiSnap = Math.floor(hi/step + eps)*step;
+  if(loSnap <= hiSnap + eps) return Math.min(hiSnap, Math.max(loSnap, snapped));
+  return Math.min(hi, Math.max(lo, rawOffset)); // no aligned point fits - rare, tight region
+}
+
+function chooseSplitPos(placed, axis, region, S, lo, hi, minGap, blockStep){
+  blockStep = blockStep || 0.25;
+  const offset = snapOffsetWithinBounds(randomSplitPoint(lo, hi), lo, hi, blockStep);
+  if(axis === 'v'){
+    const snapped = region.x + offset;
+    if(minGap <= 0) return round4(snapped);
+    const avoidXs = nearbyPositions(placed, 'v', region.y, region.y+region.h, S);
+    return avoidXs.length ? resolvePosition(snapped, region.x+lo, region.x+hi, avoidXs, minGap, S, region.x, blockStep) : round4(snapped);
+  } else {
+    const snapped = region.y + offset;
+    if(minGap <= 0) return round4(snapped);
+    const avoidYs = nearbyPositions(placed, 'h', region.x, region.x+region.w, S);
+    return avoidYs.length ? resolvePosition(snapped, region.y+lo, region.y+hi, avoidYs, minGap, S, region.y, blockStep) : round4(snapped);
+  }
+}
+
+// Fine subdivision: fills a region with individual blocks + sashing, sized
+// between minB and maxB, with randomized split axis at every step. Every
+// new sash is resolved against everything already placed in `out`, so
+// jogs and near-misses against any earlier section (macro or fine, sibling
+// or not) are avoided as generation proceeds. maxAspect caps how long-and-
+// skinny any single block is allowed to be (long side / short side) -
+// exceeding it forces a split along the long axis even if the block would
+// otherwise be a valid size.
+// Builds both the flat piece list (pushed into `out`, as before) AND a
+// binary assembly tree describing how those pieces were joined together -
+// every split becomes a 'join' node (the sash, plus the two halves it
+// connects), and every finished block becomes a 'leaf' node. This tree is
+// exactly what's needed later to generate a step-by-step sewing order.
+function subdivide(region, S, minB, maxB, out, lastAxis, run, minGap, maxAspect, blockStep){
+  const { x, y, w, h } = region;
+  const canSplitV = w >= (2*minB + S);
+  const canSplitH = h >= (2*minB + S);
+  const mustSplitV = w > maxB || (maxAspect > 0 && w/h > maxAspect);
+  const mustSplitH = h > maxB || (maxAspect > 0 && h/w > maxAspect);
+
+  if(!canSplitV && !canSplitH){
+    const blk = makeBlock(x,y,w,h); out.push(blk);
+    return { type:'leaf', id: blk.id };
+  }
+  if((mustSplitV && !canSplitV) && (mustSplitH && !canSplitH)){
+    const blk = makeBlock(x,y,w,h); out.push(blk);
+    return { type:'leaf', id: blk.id };
+  }
+
+  const forcedSplit = (mustSplitV && canSplitV) || (mustSplitH && canSplitH);
+  if(!forcedSplit){
+    let stopChance = 0.4;
+    if(maxAspect > 0){
+      const aspect = Math.max(w,h) / Math.min(w,h);
+      // taper stop chance toward 0 as the shape approaches the aspect cap,
+      // so elongated regions keep splitting instead of settling early
+      const softStart = 1 + (maxAspect-1)*0.3;
+      if(aspect > softStart){
+        const t = Math.min(1, (aspect-softStart) / Math.max(0.001, maxAspect-softStart));
+        stopChance *= (1 - t);
+      }
+    }
+    if(Math.random() < stopChance){
+      const blk = makeBlock(x,y,w,h); out.push(blk);
+      return { type:'leaf', id: blk.id };
+    }
+  }
+
+  const axis = chooseAxis(canSplitV, canSplitH, mustSplitV, mustSplitH, w, h, lastAxis, run || 0);
+  const newRun = axis === lastAxis ? (run||0) + 1 : 1;
+
+  if(axis === 'v'){
+    const avail = w - S;
+    let lo = minB, hi = avail - minB;
+    if(hi <= lo){ const blk=makeBlock(x,y,w,h); out.push(blk); return { type:'leaf', id: blk.id }; }
+    if(maxAspect > 0){
+      const aLo = h/maxAspect, aHi = h*maxAspect;
+      const cLo = Math.max(lo, aLo), cHi = Math.min(hi, aHi);
+      if(cHi > cLo){ lo = cLo; hi = cHi; }
+    }
+    const sashX = chooseSplitPos(out, 'v', region, S, lo, hi, minGap, blockStep);
+    let leftW = sashX - x, rightW = avail - leftW;
+    const sash = makeSash(sashX, y, S, h); out.push(sash);
+    const leftTree = subdivide({x, y, w:leftW, h}, S, minB, maxB, out, axis, newRun, minGap, maxAspect, blockStep);
+    const rightTree = subdivide({x:sashX+S, y, w:rightW, h}, S, minB, maxB, out, axis, newRun, minGap, maxAspect, blockStep);
+    return { type:'join', axis:'v', sashId: sash.id, left:leftTree, right:rightTree };
+  } else {
+    const avail = h - S;
+    let lo = minB, hi = avail - minB;
+    if(hi <= lo){ const blk=makeBlock(x,y,w,h); out.push(blk); return { type:'leaf', id: blk.id }; }
+    if(maxAspect > 0){
+      const aLo = w/maxAspect, aHi = w*maxAspect;
+      const cLo = Math.max(lo, aLo), cHi = Math.min(hi, aHi);
+      if(cHi > cLo){ lo = cLo; hi = cHi; }
+    }
+    const sashY = chooseSplitPos(out, 'h', region, S, lo, hi, minGap, blockStep);
+    let topH = sashY - y, botH = avail - topH;
+    const sash = makeSash(x, sashY, w, S); out.push(sash);
+    const topTree = subdivide({x, y, w, h:topH}, S, minB, maxB, out, axis, newRun, minGap, maxAspect, blockStep);
+    const botTree = subdivide({x, y:sashY+S, w, h:botH}, S, minB, maxB, out, axis, newRun, minGap, maxAspect, blockStep);
+    return { type:'join', axis:'h', sashId: sash.id, left:topTree, right:botTree };
+  }
+}
+
+// Macro tier: breaks a region into a handful of large, irregular sections
+// (like roughing out the big shapes of a stained glass design before
+// filling in the detail), then immediately fine-subdivides each leaf as
+// soon as it's finalized so its seams are visible to whatever gets placed
+// next. Also returns the assembly tree spanning both tiers.
+function macroSplit(region, S, macroMin, minBlock, maxBlock, out, depth, lastAxis, run, minGap, maxAspect, blockStep){
+  const { x, y, w, h } = region;
+  const canSplitV = w >= (2*macroMin + S);
+  const canSplitH = h >= (2*macroMin + S);
+
+  if(depth >= 6 || (!canSplitV && !canSplitH)){
+    return subdivide(region, S, minBlock, maxBlock, out, null, 0, minGap, maxAspect, blockStep);
+  }
+  const stopChance = depth === 0 ? 0.02 : (depth === 1 ? 0.12 : 0.25);
+  if(Math.random() < stopChance){
+    return subdivide(region, S, minBlock, maxBlock, out, null, 0, minGap, maxAspect, blockStep);
+  }
+
+  const axis = chooseAxis(canSplitV, canSplitH, false, false, w, h, lastAxis, run || 0);
+  const newRun = axis === lastAxis ? (run||0) + 1 : 1;
+
+  if(axis === 'v'){
+    const avail = w - S;
+    const lo = macroMin, hi = avail - macroMin;
+    if(hi <= lo){ return subdivide(region, S, minBlock, maxBlock, out, null, 0, minGap, maxAspect, blockStep); }
+    const sashX = chooseSplitPos(out, 'v', region, S, lo, hi, minGap, blockStep);
+    let leftW = sashX - x, rightW = avail - leftW;
+    const sash = makeSash(sashX, y, S, h); out.push(sash);
+    const leftTree = macroSplit({x, y, w:leftW, h}, S, macroMin, minBlock, maxBlock, out, depth+1, axis, newRun, minGap, maxAspect, blockStep);
+    const rightTree = macroSplit({x:sashX+S, y, w:rightW, h}, S, macroMin, minBlock, maxBlock, out, depth+1, axis, newRun, minGap, maxAspect, blockStep);
+    return { type:'join', axis:'v', sashId: sash.id, left:leftTree, right:rightTree };
+  } else {
+    const avail = h - S;
+    const lo = macroMin, hi = avail - macroMin;
+    if(hi <= lo){ return subdivide(region, S, minBlock, maxBlock, out, null, 0, minGap, maxAspect, blockStep); }
+    const sashY = chooseSplitPos(out, 'h', region, S, lo, hi, minGap, blockStep);
+    let topH = sashY - y, botH = avail - topH;
+    const sash = makeSash(x, sashY, w, S); out.push(sash);
+    const topTree = macroSplit({x, y, w, h:topH}, S, macroMin, minBlock, maxBlock, out, depth+1, axis, newRun, minGap, maxAspect, blockStep);
+    const botTree = macroSplit({x, y:sashY+S, w, h:botH}, S, macroMin, minBlock, maxBlock, out, depth+1, axis, newRun, minGap, maxAspect, blockStep);
+    return { type:'join', axis:'h', sashId: sash.id, left:topTree, right:botTree };
+  }
+}
+
+// Full mosaic for a region: rough out many small-to-medium irregular
+// sections first, then fill each one with its own randomized cluster of
+// blocks - mirrors designing in smaller chunks and assembling them into
+// the bigger picture, instead of a couple of dominant rows or columns.
+// Returns the assembly tree for this region.
+function buildMosaic(region, S, minBlock, maxBlock, out, minGap, maxAspect, blockStep){
+  minGap = minGap || 0;
+  blockStep = blockStep || 0.25;
+  let macroMin = Math.max(minBlock*1.6, maxBlock * (1.3 + Math.random()*0.9));
+  macroMin = Math.ceil(macroMin/blockStep) * blockStep; // grid-align so macro windows always contain a valid split point
+  return macroSplit(region, S, macroMin, minBlock, maxBlock, out, 0, null, 0, minGap, maxAspect, blockStep);
+}
+
+// Counts pairs of unrelated same-orientation sashing strips that either sit
+// closer together than minGap, or partially overlap sideways without lining
+// up into one clean straight seam (the "jog" you get at a T-junction where a
+// seam from one subsection almost, but not quite, meets one from another).
+function countTightSeams(pieces, minGap, sashW){
+  const sashes = pieces.filter(p => p.type === 'sash');
+  const verticals = sashes.filter(p => p.h > p.w);
+  const horizontals = sashes.filter(p => p.w >= p.h);
+  const eps = 0.02;
+  const adjacency = sashW + eps; // ~ separated by exactly one crossing strip
+  let violations = 0;
+
+  function evaluate(a, b, aStart, aEnd, bStart, bEnd, aCross, bCross, crossW, crossH){
+    // aStart/aEnd = the strip's own extent along its length (y for verticals, x for horizontals)
+    // aCross/bCross = the strip's position along the perpendicular axis (x for verticals, y for horizontals)
+    const lenOverlap = Math.min(aEnd, bEnd) - Math.max(aStart, bStart);
+    let related = false;
+    if(lenOverlap > eps) related = true;
+    else {
+      const lenGap = Math.max(aStart, bStart) - Math.min(aEnd, bEnd);
+      if(lenGap <= adjacency) related = true; // touching across a single crossing strip - a T-junction
+    }
+    if(!related) return 0;
+
+    if(Math.abs(a[crossW] - b[crossW]) <= eps) return 0; // aligned into one clean line - fine
+
+    const crossOverlap = Math.min(a[crossW] + a[crossH], b[crossW] + b[crossH]) - Math.max(a[crossW], b[crossW]);
+    if(crossOverlap > eps) return 1; // partial sideways overlap = a visible jog, always bad
+    const gap = a[crossW] < b[crossW] ? b[crossW] - (a[crossW]+a[crossH]) : a[crossW] - (b[crossW]+b[crossH]);
+    return gap < minGap - eps ? 1 : 0;
+  }
+
+  for(let i=0;i<verticals.length;i++){
+    for(let j=i+1;j<verticals.length;j++){
+      const a = verticals[i], b = verticals[j];
+      violations += evaluate(a, b, a.y, a.y+a.h, b.y, b.y+b.h, null, null, 'x', 'w');
+    }
+  }
+  for(let i=0;i<horizontals.length;i++){
+    for(let j=i+1;j<horizontals.length;j++){
+      const a = horizontals[i], b = horizontals[j];
+      violations += evaluate(a, b, a.x, a.x+a.w, b.x, b.x+b.w, null, null, 'y', 'h');
+    }
+  }
+  return violations;
+}
+
+// Counts blocks whose long side / short side exceeds maxAspect by more than
+// a small tolerance - these are the "stuck" leftover pieces where the min
+// block size made it geometrically impossible to split further.
+function countBadAspect(pieces, maxAspect){
+  if(!(maxAspect > 0)) return 0;
+  let count = 0;
+  pieces.forEach(p => {
+    if(p.type !== 'block') return;
+    const ratio = Math.max(p.w, p.h) / Math.min(p.w, p.h);
+    if(ratio > maxAspect + 0.02) count++;
+  });
+  return count;
+}
+
+// Counts blocks whose finished width or height isn't a half-inch multiple -
+// this can happen in rare, very tight spots where a minimum seam gap also
+// has to be honored and both constraints can't be satisfied at once.
+function countHalfInchViolations(pieces, halfInchBlocks){
+  if(!halfInchBlocks) return 0;
+  let count = 0;
+  pieces.forEach(p => {
+    if(p.type !== 'block') return;
+    const wOk = Math.abs(p.w*2 - Math.round(p.w*2)) < 0.02;
+    const hOk = Math.abs(p.h*2 - Math.round(p.h*2)) < 0.02;
+    if(!wOk || !hOk) count++;
+  });
+  return count;
+}
+
+function buildLayout(params){
+  pieceCounter = { block:0, sash:0 };
+  const { quiltW, quiltH, sashW, minBlock, maxBlock, hasPanel, panelW, panelH } = params;
+  const minGap = params.minSeamGap || 0;
+  const maxAspect = params.maxAspect > 0 ? params.maxAspect : 0;
+  const blockStep = params.halfInchBlocks ? 0.5 : 0.25;
+  const symmetry = params.symmetry || 'none';
+  const pieces = [];
+  let panelRect = null;
+  let assemblyTree = null;
+
+  // Joins two subtrees (either may be null/absent) via a sash, in reading
+  // order (left/top first) - used throughout to stitch mirrored copies and
+  // panel regions together the same way the sashes were actually placed.
+  function join(axis, sash, a, b){
+    if(!sash || !a) return b || null;
+    if(!b) return a;
+    return { type:'join', axis, sashId: sash.id, left:a, right:b };
+  }
+
+  if(hasPanel){
+    const cx = (quiltW - panelW)/2;
+    const cy = (quiltH - panelH)/2;
+    panelRect = { x: round4(cx), y: round4(cy), w: panelW, h: panelH };
+
+    const topH = panelRect.y - sashW;
+    const botY = panelRect.y + panelH + sashW;
+    const botH = quiltH - botY;
+    const leftW = panelRect.x - sashW;
+    const rightX = panelRect.x + panelW + sashW;
+    const rightW = quiltW - rightX;
+
+    // gap sashing around panel
+    const topGap = makeSash(0, panelRect.y - sashW, quiltW, sashW); pieces.push(topGap);
+    const botGap = makeSash(0, botY - sashW, quiltW, sashW); pieces.push(botGap);
+    const leftGap = leftW > 0 ? makeSash(panelRect.x - sashW, panelRect.y, sashW, panelH) : null;
+    if(leftGap) pieces.push(leftGap);
+    const rightGap = rightW > 0 ? makeSash(panelRect.x + panelW, panelRect.y, sashW, panelH) : null;
+    if(rightGap) pieces.push(rightGap);
+
+    const panelLeaf = { type:'leaf', id:'PANEL' };
+    let topTree=null, botTree=null, leftTree=null, rightTree=null;
+
+    if(symmetry === 'rotate180'){
+      // top rotates 180deg into bottom, and left rotates 180deg into right,
+      // both around the shared panel center - true point symmetry.
+      if(topH > 0.01){
+        const startIdx = pieces.length;
+        topTree = buildMosaic({x:0,y:0,w:quiltW,h:topH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+        if(botH > 0.01){
+          const topPieces = pieces.slice(startIdx);
+          const botPieces = transformPieces(topPieces, p => ({ x: round4(quiltW-p.x-p.w), y: round4(quiltH-p.y-p.h) }));
+          pieces.push(...botPieces);
+          botTree = mirrorTree(topTree, buildIdMap(topPieces, botPieces));
+        }
+      } else if(botH > 0.01){
+        botTree = buildMosaic({x:0,y:botY,w:quiltW,h:botH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+      }
+      if(leftW > 0.01){
+        const startIdx = pieces.length;
+        leftTree = buildMosaic({x:0,y:panelRect.y,w:leftW,h:panelH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+        if(rightW > 0.01){
+          const leftPieces = pieces.slice(startIdx);
+          const rightPieces = transformPieces(leftPieces, p => ({ x: round4(quiltW-p.x-p.w), y: round4(quiltH-p.y-p.h) }));
+          pieces.push(...rightPieces);
+          rightTree = mirrorTree(leftTree, buildIdMap(leftPieces, rightPieces));
+        }
+      } else if(rightW > 0.01){
+        rightTree = buildMosaic({x:rightX,y:panelRect.y,w:rightW,h:panelH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+      }
+    } else {
+      const mirrorTB = symmetry === 'tb' || symmetry === 'both';
+      const mirrorLR = symmetry === 'lr' || symmetry === 'both';
+
+      if(topH > 0.01){
+        const startIdx = pieces.length;
+        topTree = buildMosaic({x:0,y:0,w:quiltW,h:topH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+        if(mirrorTB && botH > 0.01){
+          const topPieces = pieces.slice(startIdx);
+          const botPieces = transformPieces(topPieces, p => ({ x: p.x, y: round4(quiltH-p.y-p.h) }));
+          pieces.push(...botPieces);
+          botTree = mirrorTree(topTree, buildIdMap(topPieces, botPieces));
+        }
+      }
+      if(!mirrorTB && botH > 0.01) botTree = buildMosaic({x:0,y:botY,w:quiltW,h:botH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+
+      if(leftW > 0.01){
+        const startIdx = pieces.length;
+        leftTree = buildMosaic({x:0,y:panelRect.y,w:leftW,h:panelH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+        if(mirrorLR && rightW > 0.01){
+          const leftPieces = pieces.slice(startIdx);
+          const rightPieces = transformPieces(leftPieces, p => ({ x: round4(quiltW-p.x-p.w), y: p.y }));
+          pieces.push(...rightPieces);
+          rightTree = mirrorTree(leftTree, buildIdMap(leftPieces, rightPieces));
+        }
+      }
+      if(!mirrorLR && rightW > 0.01) rightTree = buildMosaic({x:rightX,y:panelRect.y,w:rightW,h:panelH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+    }
+
+    let middleRow = join('v', leftGap, leftTree, panelLeaf);
+    middleRow = join('v', rightGap, middleRow, rightTree);
+    let fullTree = join('h', topGap, topTree, middleRow);
+    fullTree = join('h', botGap, fullTree, botTree);
+    assemblyTree = fullTree;
+
+    return { pieces, panelRect, assemblyTree, regionTrees: { top:topTree, bottom:botTree, left:leftTree, right:rightTree } };
+  } else if(symmetry === 'lr' && quiltW - sashW > 2*minBlock){
+    const halfW = round4((quiltW - sashW) / 2);
+    const startIdx = pieces.length;
+    const halfTree = buildMosaic({x:0,y:0,w:halfW,h:quiltH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+    const halfPieces = pieces.slice(startIdx);
+    const centerSash = makeSash(halfW, 0, sashW, quiltH); pieces.push(centerSash);
+    const mirroredPieces = transformPieces(halfPieces, p => ({ x: round4(quiltW-p.x-p.w), y: p.y }));
+    pieces.push(...mirroredPieces);
+    const mirroredTree = mirrorTree(halfTree, buildIdMap(halfPieces, mirroredPieces));
+    assemblyTree = join('v', centerSash, halfTree, mirroredTree);
+  } else if(symmetry === 'tb' && quiltH - sashW > 2*minBlock){
+    const halfH = round4((quiltH - sashW) / 2);
+    const startIdx = pieces.length;
+    const halfTree = buildMosaic({x:0,y:0,w:quiltW,h:halfH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+    const halfPieces = pieces.slice(startIdx);
+    const centerSash = makeSash(0, halfH, quiltW, sashW); pieces.push(centerSash);
+    const mirroredPieces = transformPieces(halfPieces, p => ({ x: p.x, y: round4(quiltH-p.y-p.h) }));
+    pieces.push(...mirroredPieces);
+    const mirroredTree = mirrorTree(halfTree, buildIdMap(halfPieces, mirroredPieces));
+    assemblyTree = join('h', centerSash, halfTree, mirroredTree);
+  } else if(symmetry === 'both' && quiltW-sashW > 2*minBlock && quiltH-sashW > 2*minBlock){
+    const halfW = round4((quiltW - sashW) / 2);
+    const halfH = round4((quiltH - sashW) / 2);
+    const startIdx = pieces.length;
+    const quadTree = buildMosaic({x:0,y:0,w:halfW,h:halfH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+    const quadPieces = pieces.slice(startIdx);
+    const vSash = makeSash(halfW, 0, sashW, quiltH); pieces.push(vSash); // full-height vertical divider
+    const hSashLeft = makeSash(0, halfH, halfW, sashW); pieces.push(hSashLeft); // horizontal divider, left of center
+    const hSashRight = makeSash(halfW+sashW, halfH, quiltW-halfW-sashW, sashW); pieces.push(hSashRight); // horizontal divider, right of center
+
+    const trPieces = transformPieces(quadPieces, p => ({ x: round4(quiltW-p.x-p.w), y: p.y })); pieces.push(...trPieces); // top-right
+    const blPieces = transformPieces(quadPieces, p => ({ x: p.x, y: round4(quiltH-p.y-p.h) })); pieces.push(...blPieces); // bottom-left
+    const brPieces = transformPieces(quadPieces, p => ({ x: round4(quiltW-p.x-p.w), y: round4(quiltH-p.y-p.h) })); pieces.push(...brPieces); // bottom-right
+
+    const trTree = mirrorTree(quadTree, buildIdMap(quadPieces, trPieces));
+    const blTree = mirrorTree(quadTree, buildIdMap(quadPieces, blPieces));
+    const brTree = mirrorTree(quadTree, buildIdMap(quadPieces, brPieces));
+
+    const leftCol = join('h', hSashLeft, quadTree, blTree);   // top-left + bottom-left
+    const rightCol = join('h', hSashRight, trTree, brTree);   // top-right + bottom-right
+    assemblyTree = join('v', vSash, leftCol, rightCol);
+  } else if(symmetry === 'rotate180' && quiltH - sashW > 2*minBlock){
+    const halfH = round4((quiltH - sashW) / 2);
+    const startIdx = pieces.length;
+    const halfTree = buildMosaic({x:0,y:0,w:quiltW,h:halfH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+    const halfPieces = pieces.slice(startIdx);
+    const centerSash = makeSash(0, halfH, quiltW, sashW); pieces.push(centerSash);
+    const rotatedPieces = transformPieces(halfPieces, p => ({ x: round4(quiltW-p.x-p.w), y: round4(quiltH-p.y-p.h) }));
+    pieces.push(...rotatedPieces);
+    const rotatedTree = mirrorTree(halfTree, buildIdMap(halfPieces, rotatedPieces));
+    assemblyTree = join('h', centerSash, halfTree, rotatedTree);
+  } else {
+    assemblyTree = buildMosaic({x:0,y:0,w:quiltW,h:quiltH}, sashW, minBlock, maxBlock, pieces, minGap, maxAspect, blockStep);
+  }
+
+  return { pieces, panelRect, assemblyTree, regionTrees: null };
+}
+
+// ---- Assembly order (order of operations) ----
+// Walks an assembly tree and produces a flat, ordered list of sewing steps.
+// Each step has plain text describing what to sew together (raw piece ids
+// for a simple run, or short "Unit N" references to previously-completed
+// steps) and a `result` label to use when this step's output is needed
+// again later - short references instead of the full nested history, or the
+// text would grow exponentially unreadable on anything but a tiny quilt.
+// Runs of same-direction joins collapse into one line ("B3 + B4 + B5"), the
+// way a quilter would naturally write it, rather than a separate step per
+// pairwise seam.
+function labelOfNode(node){
+  return node.type === 'leaf' ? (node.id === 'PANEL' ? 'Center panel' : node.id) : null;
+}
+function flattenChain(node, axis){
+  if(!node || node.type !== 'join' || node.axis !== axis) return [node];
+  return [...flattenChain(node.left, axis), ...flattenChain(node.right, axis)];
+}
+function describeNode(node, steps, counter){
+  if(node.type === 'leaf') return labelOfNode(node);
+  const chain = flattenChain(node, node.axis);
+  let text, resultLabel;
+  if(chain.length > 1 && chain.every(n => n.type === 'leaf')){
+    text = chain.map(labelOfNode).join(' + ');
+  } else {
+    const leftLabel = describeNode(node.left, steps, counter);
+    const rightLabel = describeNode(node.right, steps, counter);
+    text = `${leftLabel} + ${rightLabel}`;
+  }
+  counter.n++;
+  resultLabel = 'Unit ' + counter.n;
+  steps.push({ text, result: resultLabel });
+  return resultLabel;
+}
+function buildAssemblySteps(tree, counter, finalLabel){
+  const steps = [];
+  counter = counter || { n: 0 };
+  if(!tree) return steps;
+  describeNode(tree, steps, counter);
+  if(finalLabel && steps.length) steps[steps.length-1].result = finalLabel;
+  return steps;
+}
+// For panel quilts, presents the assembly as labeled sections (Top/Bottom/
+// Left/Right, each fully worked out on its own) followed by a final set of
+// steps joining those completed sections together with the panel - directly
+// mirroring how a quilter naturally documents a medallion-style layout.
+function buildPanelAssemblySections(regionTrees){
+  const sections = [];
+  const counter = { n: 0 };
+  const labels = {};
+  const order = [['top','Top section'], ['bottom','Bottom section'], ['left','Left section'], ['right','Right section']];
+  order.forEach(([key, title]) => {
+    const tree = regionTrees[key];
+    if(!tree) return;
+    const steps = buildAssemblySteps(tree, counter, `Completed ${title}`);
+    if(steps.length) sections.push({ title, steps });
+    labels[key] = steps.length ? steps[steps.length-1].result : labelOfNode(tree);
+  });
+
+  const finalSteps = [];
+  let middle = 'Center panel';
+  if(labels.left){ middle = `${labels.left} + Center panel`; counter.n++; finalSteps.push({ text: middle, result: 'Unit '+counter.n }); middle = 'Unit '+counter.n; }
+  if(labels.right){ counter.n++; finalSteps.push({ text: `${middle} + ${labels.right}`, result: 'Unit '+counter.n }); middle = 'Unit '+counter.n; }
+  let whole = middle;
+  if(labels.top){ counter.n++; finalSteps.push({ text: `${labels.top} + ${whole}`, result: 'Unit '+counter.n }); whole = 'Unit '+counter.n; }
+  if(labels.bottom){ counter.n++; finalSteps.push({ text: `${whole} + ${labels.bottom}`, result: 'Unit '+counter.n }); whole = 'Unit '+counter.n; }
+  if(finalSteps.length){ finalSteps[finalSteps.length-1].result = 'Finished quilt'; sections.push({ title:'Final assembly', steps: finalSteps }); }
+
+  return sections;
+}
+
+function validate(p){
+  const errors = [];
+  const fields = { 'Quilt width':p.quiltW, 'Quilt height':p.quiltH, 'Sashing width':p.sashW,
+    'Seam allowance':p.seamAllow, 'Min block size':p.minBlock, 'Max block size':p.maxBlock,
+    'Min seam gap':p.minSeamGap, 'Max shape ratio':p.maxAspect };
+  if(p.hasPanel){ fields['Panel width']=p.panelW; fields['Panel height']=p.panelH; }
+  const badFields = Object.keys(fields).filter(k => isNaN(fields[k]));
+  if(badFields.length){
+    errors.push(`Couldn't read: ${badFields.join(', ')}. Use a number like 3.5 or a fraction like 3 1/2.`);
+    return errors;
+  }
+  if(p.quiltW <= 0 || p.quiltH <= 0) errors.push('Quilt width and height must be greater than zero.');
+  if(p.sashW <= 0) errors.push('Sashing width must be greater than zero.');
+  if(p.minBlock <= 0) errors.push('Minimum block size must be greater than zero.');
+  if(p.maxBlock < p.minBlock) errors.push('Maximum block size must be at least the minimum block size.');
+  if(p.maxBlock < 2*p.minBlock + p.sashW) errors.push('Max block size should be at least (2 × min block size) + sashing width, or you\'ll mostly get one block per region.');
+  if(p.maxAspect < 1) errors.push('Max shape ratio must be at least 1 (1 means every block is forced to a square).');
+  if(p.hasPanel){
+    if(p.panelW <= 0 || p.panelH <= 0) errors.push('Panel width and height must be greater than zero.');
+    if(p.panelW >= p.quiltW - 2*p.sashW - 2*p.minBlock) errors.push('Center panel is too wide to leave room for blocks on both sides.');
+    if(p.panelH >= p.quiltH - 2*p.sashW - 2*p.minBlock) errors.push('Center panel is too tall to leave room for blocks above and below.');
+  }
+  if(p.halfInchBlocks){
+    const isHalfInch = v => Math.abs(v*2 - Math.round(v*2)) < 0.01;
+    if(!isHalfInch(p.quiltW)) errors.push('Quilt width must be a whole or half inch (e.g. 60 or 60 1/2) since "Blocks only in 1/2" increments" is checked.');
+    if(!isHalfInch(p.quiltH)) errors.push('Quilt height must be a whole or half inch since "Blocks only in 1/2" increments" is checked.');
+    if(!isHalfInch(p.sashW)) errors.push('Sashing width must be a whole or half inch since "Blocks only in 1/2" increments" is checked.');
+    if(p.hasPanel){
+      if(!isHalfInch(p.panelW)) errors.push('Panel width must be a whole or half inch too, so the blocks around it can land on the half-inch grid.');
+      if(!isHalfInch(p.panelH)) errors.push('Panel height must be a whole or half inch too, so the blocks around it can land on the half-inch grid.');
+    }
+  }
+  return errors;
+}
+
+function assignColors(pieces){
+  let last = -1;
+  pieces.forEach(p => {
+    if(p.type !== 'block') return;
+    let idx;
+    do { idx = Math.floor(Math.random()*PALETTE.length); } while(idx === last && PALETTE.length > 1);
+    last = idx;
+    p.color = PALETTE[idx];
+    p.colorIdx = idx;
+  });
+}
+
+function render(layout, params){
+  const { pieces, panelRect } = layout;
+  const { quiltW, quiltH, seamAllow, showLabels } = params;
+  const svg = document.getElementById('quiltSvg');
+  svg.setAttribute('viewBox', `0 0 ${quiltW} ${quiltH}`);
+  svg.innerHTML = '';
+
+  const strokeW = Math.max(quiltW, quiltH) * 0.0025;
+
+  function addRect(x,y,w,h,fill,extraAttrs){
+    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',x); r.setAttribute('y',y);
+    r.setAttribute('width',w); r.setAttribute('height',h);
+    r.setAttribute('fill',fill);
+    if(extraAttrs) Object.entries(extraAttrs).forEach(([k,v])=>r.setAttribute(k,v));
+    return r;
+  }
+
+  // sashing first
+  pieces.filter(p=>p.type==='sash').forEach(p=>{
+    svg.appendChild(addRect(p.x,p.y,p.w,p.h,LEADING));
+  });
+
+  // blocks
+  pieces.filter(p=>p.type==='block').forEach(p=>{
+    const rect = addRect(p.x,p.y,p.w,p.h,p.color,{
+      stroke:'rgba(0,0,0,0.35)', 'stroke-width':strokeW
+    });
+    rect.style.cursor = 'pointer';
+    const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+    const cutW = round4(p.w + 2*seamAllow), cutH = round4(p.h + 2*seamAllow);
+    title.textContent = `${p.id} — finished ${toFraction(p.w)} × ${toFraction(p.h)} — cut ${toFraction(cutW)} × ${toFraction(cutH)} — click to pick a color`;
+    rect.appendChild(title);
+    rect.addEventListener('click', ()=>{
+      openColorPicker(p, rect);
+    });
+    svg.appendChild(rect);
+    if(showLabels && p.w > quiltW*0.04 && p.h > quiltH*0.03){
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', p.x + p.w/2);
+      t.setAttribute('y', p.y + p.h/2);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-size', Math.min(p.w,p.h)*0.28);
+      t.setAttribute('fill','rgba(255,255,255,0.85)');
+      t.setAttribute('font-family','Inter, sans-serif');
+      t.textContent = p.id;
+      svg.appendChild(t);
+    }
+  });
+
+  // panel
+  if(panelRect){
+    const rect = addRect(panelRect.x, panelRect.y, panelRect.w, panelRect.h, '#ffffff', {
+      stroke: LEADING, 'stroke-width': strokeW*1.5, 'stroke-dasharray': `${strokeW*4},${strokeW*3}`
+    });
+    const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+    title.textContent = `Center panel — finished ${toFraction(panelRect.w)} × ${toFraction(panelRect.h)}`;
+    rect.appendChild(title);
+    svg.appendChild(rect);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', panelRect.x + panelRect.w/2);
+    t.setAttribute('y', panelRect.y + panelRect.h/2);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size', Math.min(panelRect.w,panelRect.h)*0.09);
+    t.setAttribute('fill', LEADING);
+    t.setAttribute('font-family','Fraunces, serif');
+    t.textContent = 'CENTER PANEL';
+    svg.appendChild(t);
+  }
+
+  document.getElementById('dimsLabel').textContent = `${toFraction(quiltW)} × ${toFraction(quiltH)}`;
+}
+
+function renderStats(pieces, seamAllow){
+  const blocks = pieces.filter(p=>p.type==='block');
+  const sashes = pieces.filter(p=>p.type==='sash');
+  const sashLen = sashes.reduce((sum,p)=> sum + Math.max(p.w,p.h), 0);
+  const uniqueBlockSizes = new Set(blocks.map(p=>`${round4(p.w)}x${round4(p.h)}`)).size;
+
+  const stats = [
+    { num: blocks.length, lbl: 'Pieced blocks' },
+    { num: uniqueBlockSizes, lbl: 'Unique block sizes' },
+    { num: sashes.length, lbl: 'Sashing strips' },
+    { num: toFraction(sashLen), lbl: 'Total sashing length' },
+  ];
+  const el = document.getElementById('statsRow');
+  el.innerHTML = stats.map(s=>`<div class="stat"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
+}
+
+function buildCutlistRows(pieces, seamAllow){
+  const groups = {};
+  pieces.forEach(p=>{
+    const cutW = round4(p.w + 2*seamAllow);
+    const cutH = round4(p.h + 2*seamAllow);
+    const finW = round4(p.w), finH = round4(p.h);
+    // normalize orientation for grouping (so 3x5 and 5x3 group together)
+    const key = p.type + '|' + [finW,finH].sort((a,b)=>a-b).join('x');
+    if(!groups[key]) groups[key] = { type:p.type, finW, finH, cutW, cutH, count:0, ids:[], colorCounts:{} };
+    groups[key].count++;
+    groups[key].ids.push(p.id);
+    if(p.type === 'block' && p.color){
+      groups[key].colorCounts[p.color] = (groups[key].colorCounts[p.color] || 0) + 1;
+    }
+  });
+
+  return Object.values(groups).sort((a,b)=>{
+    if(a.type !== b.type) return a.type === 'block' ? -1 : 1;
+    return (b.finW*b.finH) - (a.finW*a.finH);
+  });
+}
+
+function renderCutlist(pieces, seamAllow){
+  const rows = buildCutlistRows(pieces, seamAllow);
+
+  if(rows.length === 0){
+    document.getElementById('cutlistTable').innerHTML = '<div class="empty-state">Generate a layout to see the cutting list.</div>';
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Piece</th><th>IDs</th><th>Qty</th><th>Finished size</th><th>Cut size</th>
+  </tr></thead><tbody>`;
+  rows.forEach(r=>{
+    const label = r.type === 'block' ? 'Block' : 'Sashing strip';
+    let swatchesHtml;
+    if(r.type === 'block'){
+      const colorEntries = Object.entries(r.colorCounts);
+      if(colorEntries.length === 0){
+        swatchesHtml = `<span class="swatch" style="background:#7A2E3B"></span>`;
+      } else if(colorEntries.length === 1){
+        swatchesHtml = `<span class="swatch" style="background:${colorEntries[0][0]}"></span>`;
+      } else {
+        swatchesHtml = colorEntries.map(([c,n]) =>
+          `<span class="swatch-count"><span class="swatch" style="background:${c}"></span>×${n}</span>`
+        ).join('');
+      }
+    } else {
+      swatchesHtml = `<span class="swatch" style="background:${LEADING}"></span>`;
+    }
+    html += `<tr>
+      <td class="swatch-cell">${swatchesHtml}<span class="piece-label">${label}</span></td>
+      <td class="ids-cell">${r.ids.join(', ')}</td>
+      <td>${r.count}</td>
+      <td>${toFraction(r.finW)} × ${toFraction(r.finH)}</td>
+      <td>${toFraction(r.cutW)} × ${toFraction(r.cutH)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('cutlistTable').innerHTML = html;
+}
+
+function renderAssemblyOrder(layout){
+  const section = document.getElementById('assemblySection');
+  const table = document.getElementById('assemblyTable');
+  if(!layout || !layout.assemblyTree){
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+
+  function stepsTableHtml(steps){
+    if(!steps.length) return '';
+    let html = `<table class="assembly-table"><thead><tr><th>Step</th><th>Sew together</th></tr></thead><tbody>`;
+    steps.forEach((s,i)=>{
+      html += `<tr><td>${i+1}</td><td>${s.text} <span class="assembly-arrow">→</span> <strong>${s.result}</strong></td></tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  let html = '';
+  if(layout.regionTrees){
+    const sections = buildPanelAssemblySections(layout.regionTrees);
+    sections.forEach(sec=>{
+      html += `<h3 class="assembly-section-title">${sec.title}</h3>`;
+      html += stepsTableHtml(sec.steps);
+    });
+  } else {
+    const steps = buildAssemblySteps(layout.assemblyTree, null, 'Finished quilt');
+    html += stepsTableHtml(steps);
+  }
+  table.innerHTML = html || '<div class="empty-state">Nothing to assemble yet.</div>';
+}
+
+function readParams(){
+  const q = v => { const n = parseFraction(v); return isNaN(n) ? n : round4(n); };
+  return {
+    quiltW: q(document.getElementById('quiltW').value),
+    quiltH: q(document.getElementById('quiltH').value),
+    sashW: q(document.getElementById('sashW').value),
+    seamAllow: q(document.getElementById('seamAllow').value),
+    minBlock: q(document.getElementById('minBlock').value),
+    maxBlock: q(document.getElementById('maxBlock').value),
+    maxAspect: parseFraction(document.getElementById('maxAspect').value),
+    halfInchBlocks: document.getElementById('halfInchBlocks').checked,
+    minSeamGap: q(document.getElementById('minSeamGap').value),
+    hasPanel: document.getElementById('hasPanel').checked,
+    panelW: q(document.getElementById('panelW').value),
+    panelH: q(document.getElementById('panelH').value),
+    symmetry: document.getElementById('symmetry').value,
+    mirrorColors: document.getElementById('mirrorColors').checked,
+    showLabels: document.getElementById('showLabels').checked,
+  };
+}
+
+let currentLayout = null;
+
+function generate(){
+  const params = readParams();
+  const errors = validate(params);
+  const errBox = document.getElementById('errorMsg');
+  if(errors.length){
+    errBox.style.display = 'block';
+    errBox.innerHTML = errors.map(e=>'• '+e).join('<br>');
+    return;
+  }
+  errBox.style.display = 'none';
+
+  const minGap = isNaN(params.minSeamGap) ? 1 : params.minSeamGap;
+  const maxAspect = params.maxAspect > 0 ? params.maxAspect : 0;
+  const MAX_ATTEMPTS = 40;
+  let best = null, bestSeamV = Infinity, bestAspectV = Infinity, bestHalfInchV = Infinity, bestScore = Infinity;
+  for(let attempt=0; attempt<MAX_ATTEMPTS; attempt++){
+    const layout = buildLayout(params);
+    const seamV = minGap > 0 ? countTightSeams(layout.pieces, minGap, params.sashW) : 0;
+    const aspectV = countBadAspect(layout.pieces, maxAspect);
+    const halfInchV = countHalfInchViolations(layout.pieces, params.halfInchBlocks);
+    const score = seamV + aspectV + halfInchV;
+    if(score < bestScore){
+      best = layout;
+      bestScore = score;
+      bestSeamV = seamV;
+      bestAspectV = aspectV;
+      bestHalfInchV = halfInchV;
+    }
+    if(bestScore === 0) break;
+  }
+
+  assignColors(best.pieces);
+  if(params.mirrorColors) syncMirroredColors(best.pieces);
+  currentLayout = { layout: best, params };
+  render(best, params);
+  renderStats(best.pieces, params.seamAllow);
+  renderCutlist(best.pieces, params.seamAllow);
+  renderAssemblyOrder(best);
+
+  const noteBox = document.getElementById('tightSpotNote');
+  const notes = [];
+  if(bestSeamV > 0){
+    notes.push(`${bestSeamV} seam${bestSeamV>1?'s are':' is'} still closer together than ${toFraction(minGap)}. Try shuffling again, or raise Min block size / Min seam gap.`);
+  }
+  if(bestAspectV > 0){
+    notes.push(`${bestAspectV} block${bestAspectV>1?'s are':' is'} longer/thinner than your Max shape ratio allows - this happens when Min/Max block size don't leave room to split further. Try lowering Max finished size, raising Min finished size, or raising Max shape ratio.`);
+  }
+  if(bestHalfInchV > 0){
+    notes.push(`${bestHalfInchV} block${bestHalfInchV>1?'s land':' lands'} off the 1/2" grid - a rare, very tight spot where honoring the Min seam gap left no half-inch-aligned option. Try shuffling again, or relax Min seam gap slightly.`);
+  }
+  if(notes.length){
+    noteBox.style.display = 'block';
+    noteBox.innerHTML = notes.join('<br>');
+  } else {
+    noteBox.style.display = 'none';
+  }
+}
+
+document.getElementById('hasPanel').addEventListener('change', (e)=>{
+  document.getElementById('panelFields').classList.toggle('active', e.target.checked);
+});
+document.getElementById('symmetry').addEventListener('change', (e)=>{
+  document.getElementById('mirrorColorsRow').style.display = e.target.value === 'none' ? 'none' : 'flex';
+});
+document.getElementById('generateBtn').addEventListener('click', generate);
+document.getElementById('showLabels').addEventListener('change', ()=>{
+  if(currentLayout){
+    render(currentLayout.layout, readParams());
+  }
+});
+function triggerPrint(inclDiagram, inclStats, inclCutlist, inclAssembly){
+  if(!inclDiagram && !inclStats && !inclCutlist && !inclAssembly) return; // nothing selected - nothing to print
+  const classes = [];
+  if(inclDiagram) classes.push('print-incl-diagram');
+  if(inclStats) classes.push('print-incl-stats');
+  if(inclCutlist) classes.push('print-incl-cutlist');
+  if(inclAssembly) classes.push('print-incl-assembly');
+  document.body.classList.add(...classes);
+  const cleanup = () => document.body.classList.remove('print-incl-diagram','print-incl-stats','print-incl-cutlist','print-incl-assembly');
+  window.addEventListener('afterprint', cleanup, { once: true });
+  window.print();
+  setTimeout(cleanup, 2000); // fallback in case afterprint doesn't fire
+}
+
+document.getElementById('printMenuBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('printPopover').classList.toggle('open');
+});
+document.getElementById('printCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('printPopover').classList.remove('open');
+});
+document.addEventListener('click', (e)=>{
+  const popover = document.getElementById('printPopover');
+  if(popover.classList.contains('open') && !popover.contains(e.target) && e.target.id !== 'printMenuBtn'){
+    popover.classList.remove('open');
+  }
+});
+document.getElementById('printGoBtn').addEventListener('click', ()=>{
+  const inclDiagram = document.getElementById('printInclDiagram').checked;
+  const inclStats = document.getElementById('printInclStats').checked;
+  const inclCutlist = document.getElementById('printInclCutlist').checked;
+  const inclAssembly = document.getElementById('printInclAssembly').checked;
+  document.getElementById('printPopover').classList.remove('open');
+  triggerPrint(inclDiagram, inclStats, inclCutlist, inclAssembly);
+});
+document.getElementById('randomizeColorsBtn').addEventListener('click', ()=>{
+  if(currentLayout){
+    assignColors(currentLayout.layout.pieces);
+    if(currentLayout.params.mirrorColors) syncMirroredColors(currentLayout.layout.pieces);
+    render(currentLayout.layout, readParams());
+    renderCutlist(currentLayout.layout.pieces, currentLayout.params.seamAllow);
+  }
+});
+
+// ---- Save / Load ----
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function timestampSlug(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function csvEscape(val){
+  const s = String(val);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+document.getElementById('saveMenuBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('savePopover').classList.toggle('open');
+});
+document.getElementById('saveCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('savePopover').classList.remove('open');
+});
+document.addEventListener('click', (e)=>{
+  const popover = document.getElementById('savePopover');
+  if(popover.classList.contains('open') && !popover.contains(e.target) && e.target.id !== 'saveMenuBtn'){
+    popover.classList.remove('open');
+  }
+});
+
+document.getElementById('saveJsonBtn').addEventListener('click', ()=>{
+  if(!currentLayout) return;
+  const data = {
+    app: 'stained-glass-quilt-planner',
+    version: 1,
+    savedAt: new Date().toISOString(),
+    params: currentLayout.params,
+    pieces: currentLayout.layout.pieces,
+    panelRect: currentLayout.layout.panelRect || null,
+    assemblyTree: currentLayout.layout.assemblyTree || null,
+    regionTrees: currentLayout.layout.regionTrees || null,
+  };
+  downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `quilt-layout-${timestampSlug()}.json`);
+  document.getElementById('savePopover').classList.remove('open');
+});
+
+document.getElementById('savePngBtn').addEventListener('click', ()=>{
+  if(!currentLayout) return;
+  const svgEl = document.getElementById('quiltSvg');
+  const vb = svgEl.viewBox.baseVal;
+  const PX_PER_INCH = 20, MAX_DIM = 3000;
+  let outW = vb.width * PX_PER_INCH, outH = vb.height * PX_PER_INCH;
+  if(outW > MAX_DIM || outH > MAX_DIM){
+    const scale = MAX_DIM / Math.max(outW, outH);
+    outW *= scale; outH *= scale;
+  }
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('width', outW);
+  clone.setAttribute('height', outH);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const svgBlob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f7f4ec';
+    ctx.fillRect(0, 0, outW, outH);
+    ctx.drawImage(img, 0, 0, outW, outH);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((blob)=> downloadBlob(blob, `quilt-diagram-${timestampSlug()}.png`), 'image/png');
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); alert('Could not render the diagram image. Try again, or use PDF instead.'); };
+  img.src = url;
+  document.getElementById('savePopover').classList.remove('open');
+});
+
+document.getElementById('saveCsvBtn').addEventListener('click', ()=>{
+  if(!currentLayout) return;
+  const rows = buildCutlistRows(currentLayout.layout.pieces, currentLayout.params.seamAllow);
+  const lines = [['Piece','IDs','Qty','Finished Width (in)','Finished Height (in)','Cut Width (in)','Cut Height (in)'].map(csvEscape).join(',')];
+  rows.forEach(r=>{
+    const label = r.type === 'block' ? 'Block' : 'Sashing strip';
+    lines.push([label, r.ids.join('; '), r.count, r.finW, r.finH, r.cutW, r.cutH].map(csvEscape).join(','));
+  });
+  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), `quilt-cutting-list-${timestampSlug()}.csv`);
+  document.getElementById('savePopover').classList.remove('open');
+});
+
+document.getElementById('savePdfBtn').addEventListener('click', ()=>{
+  document.getElementById('savePopover').classList.remove('open');
+  triggerPrint(true, true, true, true);
+});
+
+document.getElementById('loadMenuBtn').addEventListener('click', ()=>{
+  document.getElementById('loadFileInput').click();
+});
+document.getElementById('loadFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); }
+    catch(err){ alert("That file isn't a valid project file."); e.target.value=''; return; }
+    if(!data || data.app !== 'stained-glass-quilt-planner' || !data.params || !Array.isArray(data.pieces)){
+      alert("That file isn't a valid project file for this app.");
+      e.target.value = '';
+      return;
+    }
+    loadProject(data);
+    e.target.value = '';
+  };
+  reader.onerror = () => alert('Could not read that file.');
+  reader.readAsText(file);
+});
+
+function loadProject(data){
+  const p = data.params;
+  const setFrac = (id, val) => { if(val !== undefined && val !== null && !isNaN(val)) document.getElementById(id).value = toFraction(val); };
+  const setPlain = (id, val) => { if(val !== undefined && val !== null && !isNaN(val)) document.getElementById(id).value = val; };
+  setFrac('quiltW', p.quiltW);
+  setFrac('quiltH', p.quiltH);
+  setFrac('sashW', p.sashW);
+  setFrac('seamAllow', p.seamAllow);
+  setFrac('minSeamGap', p.minSeamGap);
+  setFrac('minBlock', p.minBlock);
+  setFrac('maxBlock', p.maxBlock);
+  setPlain('maxAspect', p.maxAspect);
+  document.getElementById('halfInchBlocks').checked = !!p.halfInchBlocks;
+  document.getElementById('hasPanel').checked = !!p.hasPanel;
+  document.getElementById('panelFields').classList.toggle('active', !!p.hasPanel);
+  if(p.hasPanel){
+    setFrac('panelW', p.panelW);
+    setFrac('panelH', p.panelH);
+  }
+  document.getElementById('symmetry').value = p.symmetry || 'none';
+  document.getElementById('mirrorColors').checked = !!p.mirrorColors;
+  document.getElementById('mirrorColorsRow').style.display = (p.symmetry && p.symmetry !== 'none') ? 'flex' : 'none';
+
+  const layout = { pieces: data.pieces, panelRect: data.panelRect || null, assemblyTree: data.assemblyTree || null, regionTrees: data.regionTrees || null };
+  currentLayout = { layout, params: p };
+  render(layout, { ...p, showLabels: document.getElementById('showLabels').checked });
+  renderStats(layout.pieces, p.seamAllow);
+  renderCutlist(layout.pieces, p.seamAllow);
+  renderAssemblyOrder(layout);
+  document.getElementById('errorMsg').style.display = 'none';
+  document.getElementById('tightSpotNote').style.display = 'none';
+}
+
+// ---- Custom color picker: HSV square + hue slider + RGB/hex fields ----
+let activeColorTarget = null;
+let cpState = { h: 0, s: 1, v: 1 };
+
+function hsvToRgb(h, s, v){
+  const c = v * s, x = c * (1 - Math.abs((h/60) % 2 - 1)), m = v - c;
+  let r,g,b;
+  if(h < 60){ [r,g,b] = [c,x,0]; }
+  else if(h < 120){ [r,g,b] = [x,c,0]; }
+  else if(h < 180){ [r,g,b] = [0,c,x]; }
+  else if(h < 240){ [r,g,b] = [0,x,c]; }
+  else if(h < 300){ [r,g,b] = [x,0,c]; }
+  else { [r,g,b] = [c,0,x]; }
+  return { r: Math.round((r+m)*255), g: Math.round((g+m)*255), b: Math.round((b+m)*255) };
+}
+function rgbToHsv(r, g, b){
+  r/=255; g/=255; b/=255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max-min;
+  let h = 0;
+  if(d !== 0){
+    if(max === r) h = 60 * (((g-b)/d) % 6);
+    else if(max === g) h = 60 * ((b-r)/d + 2);
+    else h = 60 * ((r-g)/d + 4);
+  }
+  if(h < 0) h += 360;
+  const s = max === 0 ? 0 : d/max;
+  return { h, s, v: max };
+}
+function rgbToHex(r,g,b){ return '#'+[r,g,b].map(x=>Math.max(0,Math.min(255,x)).toString(16).padStart(2,'0')).join(''); }
+function hexToRgb(hex){
+  const m = hex.replace('#','').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if(!m) return null;
+  return { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) };
+}
+
+const cpSvSquare = document.getElementById('cpSvSquare');
+const cpSvCursor = document.getElementById('cpSvCursor');
+const cpHueSlider = document.getElementById('cpHueSlider');
+const cpHueCursor = document.getElementById('cpHueCursor');
+const cpPreview = document.getElementById('cpPreview');
+const cpHex = document.getElementById('cpHex');
+const cpR = document.getElementById('cpR');
+const cpG = document.getElementById('cpG');
+const cpB = document.getElementById('cpB');
+const colorPickerPopover = document.getElementById('colorPickerPopover');
+
+function updateFromState(){
+  const { h, s, v } = cpState;
+  const rgb = hsvToRgb(h, s, v);
+  const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+  cpSvSquare.style.backgroundColor = `hsl(${h}, 100%, 50%)`;
+  cpSvCursor.style.left = (s*100) + '%';
+  cpSvCursor.style.top = ((1-v)*100) + '%';
+  cpHueCursor.style.top = (h/360*100) + '%';
+
+  cpPreview.style.background = hex;
+  cpHex.value = hex;
+  cpR.value = rgb.r;
+  cpG.value = rgb.g;
+  cpB.value = rgb.b;
+
+  if(activeColorTarget){
+    activeColorTarget.piece.color = hex;
+    activeColorTarget.rect.setAttribute('fill', hex);
+    if(currentLayout){
+      renderCutlist(currentLayout.layout.pieces, currentLayout.params.seamAllow);
+    }
+  }
+}
+
+function openColorPicker(piece, rect){
+  activeColorTarget = { piece, rect };
+  const rgb = hexToRgb(piece.color) || { r:122, g:46, b:59 };
+  cpState = rgbToHsv(rgb.r, rgb.g, rgb.b);
+  updateFromState();
+  colorPickerPopover.classList.add('open');
+}
+
+function dragTrack(el, onMove){
+  const handleMove = (clientX, clientY) => {
+    const rect = el.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    onMove(x, y);
+  };
+  el.addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    handleMove(e.clientX, e.clientY);
+    const onPointerMove = (ev) => handleMove(ev.clientX, ev.clientY);
+    const onPointerUp = () => {
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    };
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  });
+}
+
+dragTrack(cpSvSquare, (x, y) => {
+  cpState.s = x;
+  cpState.v = 1 - y;
+  updateFromState();
+});
+dragTrack(cpHueSlider, (x, y) => {
+  cpState.h = y * 360;
+  updateFromState();
+});
+
+function applyRgbFields(){
+  const r = Math.max(0, Math.min(255, parseInt(cpR.value) || 0));
+  const g = Math.max(0, Math.min(255, parseInt(cpG.value) || 0));
+  const b = Math.max(0, Math.min(255, parseInt(cpB.value) || 0));
+  cpState = rgbToHsv(r, g, b);
+  updateFromState();
+}
+[cpR, cpG, cpB].forEach(input => input.addEventListener('input', applyRgbFields));
+cpHex.addEventListener('input', ()=>{
+  const rgb = hexToRgb(cpHex.value);
+  if(!rgb) return; // wait for a valid 6-digit hex before applying
+  cpState = rgbToHsv(rgb.r, rgb.g, rgb.b);
+  updateFromState();
+});
+document.addEventListener('click', (e)=>{
+  if(colorPickerPopover.classList.contains('open') &&
+     !colorPickerPopover.contains(e.target) &&
+     e.target.closest('svg') === null){
+    colorPickerPopover.classList.remove('open');
+  }
+});
+
+// initial render
+generate();
+</script>
+</body>
+</html>
